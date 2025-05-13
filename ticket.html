@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ticket Confirmation</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f9fc;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .ticket-card {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .ticket-card h1 {
+      color: #4a90e2;
+      margin-bottom: 20px;
+    }
+
+    .ticket-card p {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    .success {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #e74c3c;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+  <script>
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const ticket = params.get('ticket');
+      const name = params.get('name');
+      const seat = params.get('seat');
+
+      if (ticket && name && seat) {
+        document.getElementById('ticketNumber').textContent = ticket;
+        document.getElementById('name').textContent = name;
+        document.getElementById('seat').textContent = seat;
+      } else {
+        document.getElementById('ticketCard').innerHTML = '<p class="error">Invalid or missing ticket data.</p>';
+      }
+    };
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="ticket-card" id="ticketCard">
+      <h1>🎟️ Ticket Confirmed</h1>
+      <p><strong>Ticket Number:</strong> <span id="ticketNumber"></span></p>
+      <p><strong>Name:</strong> <span id="name"></span></p>
+      <p><strong>Seat Number:</strong> <span id="seat"></span></p>
+      <div class="success">✅ Attendance Registered</div>
+    </div>
+  </div>
+</body>
+</html>
