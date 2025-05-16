@@ -29,10 +29,10 @@
       .catch(() => console.log("Pabbly attendance webhook failed"));
 
     // Fetch ticket info from Google Sheet via opensheet
-    fetch('https://docs.google.com/spreadsheets/d/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/edit?usp=sharing')
+    fetch('https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/Attendance%200')
       .then(res => res.json())
       .then(data => {
-        const match = data.find(row => row.Ticket_Number === ticketNumber);
+    const match = data.find(row => row.Ticket_Number === ticketNumber);
         if (match) {
           document.getElementById("name").textContent = match.Name;
           document.getElementById("seat").textContent = match.Seat_Number;
