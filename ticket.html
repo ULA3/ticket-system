@@ -1,13 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Ticket Confirmation</title>
   <style>
-    body { font-family: Arial; text-align: center; padding: 40px; }
-    .card { background: #f9f9f9; padding: 25px; border-radius: 12px; box-shadow: 0 0 12px #ccc; display: inline-block; }
-    h2 { color: #2c3e50; }
-    .label { font-weight: bold; }
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 40px;
+    }
+    .card {
+      background: #f9f9f9;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #ccc;
+      display: inline-block;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    .label {
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -16,7 +36,7 @@
     <p><span class="label">Ticket Number:</span> <span id="ticket">Loading...</span></p>
     <p><span class="label">Name:</span> <span id="name">Loading...</span></p>
     <p><span class="label">Seat:</span> <span id="seat">Loading...</span></p>
-    <p style="color:green;"><em>✅ Attendance has been recorded.</em></p>
+    <p id="status"><em>⏳ Checking attendance...</em></p>
   </div>
 
   <script>
@@ -24,22 +44,32 @@
     const ticketNumber = urlParams.get('ticket');
     document.getElementById("ticket").textContent = ticketNumber;
 
-    // Send background call to mark attendance
-    fetch(`https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc?ticket=${ticketNumber}`)
-      .catch(() => console.log("Pabbly attendance webhook failed"));
-
-    // Fetch ticket info from Google Sheet via opensheet
+    // Fetch ticket info from OpenSheet
     fetch('https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/Attendance%200')
       .then(res => res.json())
       .then(data => {
-    const match = data.find(row => row.Ticket_Number === ticketNumber);
+        const match = data.find(row => row.Ticket_Number === ticketNumber);
+
         if (match) {
+          // Display name and seat
           document.getElementById("name").textContent = match.Name;
           document.getElementById("seat").textContent = match.Seat_Number;
+          document.getElementById("status").innerHTML = `<span class="success">✅ Attendance has been recorded.</span>`;
+
+          // ✅ Send to Pabbly webhook (only if ticket is valid)
+          fetch(`https://connect.pabbly.com/workflow/sendwebhookdata/IJ3UNjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc?ticket=${ticketNumber}`)
+            .catch(() => console.log("Pabbly webhook failed"));
+
         } else {
+          // ❌ Ticket not found
           document.getElementById("name").textContent = "Not found";
           document.getElementById("seat").textContent = "-";
+          document.getElementById("status").innerHTML = `<span class="error">❌ Ticket not found. Please check your link.</span>`;
         }
+      })
+      .catch(err => {
+        document.getElementById("status").innerHTML = `<span class="error">❌ Error fetching ticket data.</span>`;
+        console.error(err);
       });
   </script>
 </body>
