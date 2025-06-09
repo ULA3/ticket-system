@@ -73,22 +73,22 @@
             <p id="confirmMsg" style="margin-top:10px;"></p>
           `;
 
-        document.getElementById("confirmBtn").addEventListener("click", () => {
-          fetch("https://connect.pabbly.com/workflow/sendwebhookdata/IJ3UNjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ ticket: ticketNumber })
-          })
-          .then(() => {
-            document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
-            document.getElementById("confirmBtn").style.display = "none";
-          })
-          .catch(() => {
-            document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
+          document.getElementById("confirmBtn").addEventListener("click", () => {
+            fetch("https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ ticket: ticketNumber })
+            })
+              .then(() => {
+                document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
+                document.getElementById("confirmBtn").style.display = "none";
+              })
+              .catch(() => {
+                document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
+              });
           });
-        });
 
         } else {
           // ❌ Ticket not found
