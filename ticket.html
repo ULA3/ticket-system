@@ -28,6 +28,18 @@
     .error {
       color: red;
     }
+    #confirmBtn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #confirmBtn:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -54,11 +66,23 @@
           // Display name and seat
           document.getElementById("name").textContent = match.Name;
           document.getElementById("seat").textContent = match.Seat_Number;
-          document.getElementById("status").innerHTML = `<span class="success">✅ Attendance has been recorded.</span>`;
 
-          // ✅ Send to Pabbly webhook (only if ticket is valid)
-          fetch(`https://connect.pabbly.com/workflow/sendwebhookdata/IJ3UNjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc?ticket=${ticketNumber}`)
-            .catch(() => console.log("Pabbly webhook failed"));
+          // Show Confirm Attendance button
+          document.getElementById("status").innerHTML = `
+            <button id="confirmBtn">✅ Confirm Attendance</button>
+            <p id="confirmMsg" style="margin-top:10px;"></p>
+          `;
+
+          document.getElementById("confirmBtn").addEventListener("click", () => {
+            fetch(`https://connect.pabbly.com/workflow/sendwebhookdata/IJ3UNjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc?ticket=${ticketNumber}`)
+              .then(() => {
+                document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
+                document.getElementById("confirmBtn").style.display = "none";
+              })
+              .catch(() => {
+                document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
+              });
+          });
 
         } else {
           // ❌ Ticket not found
