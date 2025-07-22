@@ -16,18 +16,10 @@
       box-shadow: 0 0 12px #ccc;
       display: inline-block;
     }
-    h2 {
-      color: #2c3e50;
-    }
-    .label {
-      font-weight: bold;
-    }
-    .success {
-      color: green;
-    }
-    .error {
-      color: red;
-    }
+    h2 { color: #2c3e50; }
+    .label { font-weight: bold; }
+    .success { color: green; }
+    .error { color: red; }
     #confirmBtn {
       background-color: #4CAF50;
       color: white;
@@ -37,9 +29,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    #confirmBtn:hover {
-      background-color: #45a049;
-    }
+    #confirmBtn:hover { background-color: #45a049; }
   </style>
 </head>
 <body>
@@ -56,18 +46,26 @@
     const ticketNumber = urlParams.get('ticket');
     document.getElementById("ticket").textContent = ticketNumber;
 
-    // Fetch ticket info from OpenSheet
-    fetch('https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/XJ30EventTicketingSystem')
-      .then(res => res.json())
+    const sheetUrl = 'https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/XJ30EventTicketingSystem';
+
+    fetch(sheetUrl)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch sheet data: ' + res.status);
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format received.');
+        }
+
         const match = data.find(row => row.Ticket_Number === ticketNumber);
 
         if (match) {
-          // Display name and seat
-          document.getElementById("name").textContent = match.Name;
-          document.getElementById("seat").textContent = match.Seat_Number;
+          document.getElementById("name").textContent = match.Name || "-";
+          document.getElementById("seat").textContent = match.Seat_Number || "-";
 
-          // Show Confirm Attendance button
           document.getElementById("status").innerHTML = `
             <button id="confirmBtn">✅ Confirm Attendance</button>
             <p id="confirmMsg" style="margin-top:10px;"></p>
@@ -76,30 +74,27 @@
           document.getElementById("confirmBtn").addEventListener("click", () => {
             fetch("https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ ticket: ticketNumber })
             })
-              .then(() => {
-                document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
-                document.getElementById("confirmBtn").style.display = "none";
-              })
-              .catch(() => {
-                document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
-              });
+            .then(() => {
+              document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
+              document.getElementById("confirmBtn").style.display = "none";
+            })
+            .catch(() => {
+              document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
+            });
           });
 
         } else {
-          // ❌ Ticket not found
           document.getElementById("name").textContent = "Not found";
           document.getElementById("seat").textContent = "-";
           document.getElementById("status").innerHTML = `<span class="error">❌ Ticket not found. Please check your link.</span>`;
         }
       })
       .catch(err => {
-        document.getElementById("status").innerHTML = `<span class="error">❌ Error fetching ticket data.</span>`;
         console.error(err);
+        document.getElementById("status").innerHTML = `<span class="error">❌ Error fetching ticket data.</span>`;
       });
   </script>
 </body>
