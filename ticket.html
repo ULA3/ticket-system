@@ -60,7 +60,8 @@
           throw new Error('Invalid data format received.');
         }
 
-        const match = data.find(row => row.Ticket_Number === ticketNumber);
+        const cleanTicket = (ticketNumber || "").trim();
+        const match = data.find(row => (row["Ticket_Number"] || "").trim() === cleanTicket);
 
         if (match) {
           document.getElementById("name").textContent = match.Name || "-";
