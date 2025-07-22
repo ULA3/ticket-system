@@ -57,7 +57,7 @@
     document.getElementById("ticket").textContent = ticketNumber;
 
     // Fetch ticket info from OpenSheet
-    fetch('https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/Attendance%200')
+    fetch('https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/Attendance')
       .then(res => res.json())
       .then(data => {
         const match = data.find(row => row.Ticket_Number === ticketNumber);
