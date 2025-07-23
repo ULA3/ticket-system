@@ -38,59 +38,65 @@
     <p><span class="label">Ticket Number:</span> <span id="ticket">Loading...</span></p>
     <p><span class="label">Name:</span> <span id="name">Loading...</span></p>
     <p><span class="label">Seat:</span> <span id="seat">Loading...</span></p>
-    <p id="status"><em>⏳ Checking attendance...</em></p>
+    <div id="status"><em>⏳ Checking attendance...</em></div>
   </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const ticketNumber = urlParams.get('ticket');
-    document.getElementById("ticket").textContent = ticketNumber;
+    const cleanTicket = (ticketNumber || "").trim();
+    document.getElementById("ticket").textContent = cleanTicket;
 
     const sheetUrl = 'https://opensheet.elk.sh/1icbzn5Smlbj4OhjLEj9e1WuBNrxY_6NRbqta7M1-L-c/Attendance0';
 
+    // Check localStorage for saved status
+    const confirmedKey = `confirmed_${cleanTicket}`;
+    const isAlreadyConfirmed = localStorage.getItem(confirmedKey) === "true";
+
     fetch(sheetUrl)
       .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to fetch sheet data: ' + res.status);
-        }
+        if (!res.ok) throw new Error('Failed to fetch sheet data: ' + res.status);
         return res.json();
       })
       .then(data => {
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format received.');
-        }
-
-        const cleanTicket = (ticketNumber || "").trim();
+        if (!Array.isArray(data)) throw new Error('Invalid data format received.');
         const match = data.find(row => (row["Ticket_Number"] || "").trim() === cleanTicket);
+
+        const statusDiv = document.getElementById("status");
 
         if (match) {
           document.getElementById("name").textContent = match.Name || "-";
           document.getElementById("seat").textContent = match.Seat_Number || "-";
 
-          document.getElementById("status").innerHTML = `
-            <button id="confirmBtn">✅ Confirm Attendance</button>
-            <p id="confirmMsg" style="margin-top:10px;"></p>
-          `;
+          if (isAlreadyConfirmed) {
+            statusDiv.innerHTML = `<span class="success">✅ Attendance already confirmed!</span>`;
+          } else {
+            statusDiv.innerHTML = `
+              <button id="confirmBtn">✅ Confirm Attendance</button>
+              <p id="confirmMsg" style="margin-top:10px;"></p>
+            `;
 
-          document.getElementById("confirmBtn").addEventListener("click", () => {
-            fetch("https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ticket: ticketNumber })
-            })
-            .then(() => {
-              document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
-              document.getElementById("confirmBtn").style.display = "none";
-            })
-            .catch(() => {
-              document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
+            document.getElementById("confirmBtn").addEventListener("click", () => {
+              fetch("https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjYwNTY4MDYzMjA0MzQ1MjY1NTUzMjUxMzYi_pc", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ticket: cleanTicket })
+              })
+              .then(() => {
+                localStorage.setItem(confirmedKey, "true");
+                document.getElementById("confirmMsg").innerHTML = `<span class="success">✅ Your attendance has been recorded!</span>`;
+                document.getElementById("confirmBtn").style.display = "none";
+              })
+              .catch(() => {
+                document.getElementById("confirmMsg").innerHTML = `<span class="error">❌ Failed to send. Try again later.</span>`;
+              });
             });
-          });
+          }
 
         } else {
           document.getElementById("name").textContent = "Not found";
           document.getElementById("seat").textContent = "-";
-          document.getElementById("status").innerHTML = `<span class="error">❌ Ticket not found. Please check your link.</span>`;
+          statusDiv.innerHTML = `<span class="error">❌ Ticket not found. Please check your link.</span>`;
         }
       })
       .catch(err => {
